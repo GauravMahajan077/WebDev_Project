@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gaurav Mahajan — Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -11,6 +11,7 @@
       --neo-shadow: rgba(0,0,0,1);
       --bg-paper: #fffdf7;
       
+      /* Default starting colors*/
       --s1: #7fe8a8;
       --s2: #9ff2c6;
       --s3: #ccfeec;
@@ -21,6 +22,7 @@
     
     html, body { height: 100%; }
     body {
+      /* The background will transition smoothy when CSS variables change */
       background: linear-gradient(
         90deg,
         var(--s1) 0% 16.66%,
@@ -30,6 +32,7 @@
         var(--s5) 66.66% 83.33%,
         var(--s6) 83.33% 100%
       );
+      transition: background 650ms ease-out;
       min-height: 100vh;
       margin: 0;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
@@ -79,7 +82,7 @@
       box-shadow: 10px 10px 0 0 var(--neo-shadow);
       width: 100%;
       max-width: 360px;
-      overflow: hidden;
+      overflow: visible;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       box-sizing: border-box;
@@ -102,33 +105,69 @@
       display: inline-block;
       padding: 12px;
       width: 100%;
-    }
-    .frame-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      border-radius: 6px;
+      box-sizing: border-box;
+      overflow: visible;
       position: relative;
-      z-index: 1;
-      aspect-ratio: 4 / 5;
-      background: #f7f7f7;
+      background: transparent;
     }
-    
-    .frame-img-clean {
-      -webkit-mask-image: linear-gradient(#000 98%, transparent 100%);
-      mask-image: linear-gradient(#000 98%, transparent 100%);
-      mask-size: 100% 100%;
-    }
-    
+
     .neobrutal-frame:hover {
       transform: translate(-6px, -6px) rotate(-1deg);
       box-shadow: 14px 14px 0 0 var(--neo-shadow);
     }
 
+    /* Photo stack container */
+    .photo-stack {
+      position: relative;
+      width: 100%;
+      height: 0;
+
+      /* Maintain aspect ratio 4:5 (360x450) */
+      padding-bottom: 125%; /* 5/4 = 125% */
+      perspective: 1400px;
+      cursor: pointer;
+      outline: none;
+    }
+
+
+
+    .stack-img {
+      position: absolute;
+      top: 12px; left: 12px; right: 12px; bottom: 12px;
+      width: calc(100% - 24px);
+      height: calc(100% - 24px);
+      object-fit: cover;
+      border-radius: 8px;
+      border: 6px solid #000;
+      box-shadow: 10px 10px 0 rgba(0,0,0,1);
+      transition: transform 650ms cubic-bezier(.2,.9,.2,1), opacity 350ms ease, box-shadow 200ms ease;
+      transform-origin: 50% 50%;
+      opacity: 0.95;
+      display: block;
+      will-change: transform, opacity;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* The active (top) image */
+    .stack-img.active {
+      opacity: 1;
+      transform: translate3d(0,0,0) scale(1) rotate(0deg);
+      box-shadow: 18px 18px 0 rgba(0,0,0,1);
+      z-index: 50;
+    }
+
+    /* Slightly less prominent images behind */
+    .stack-img.behind {
+      opacity: 0.95;
+      z-index: 10;
+      box-shadow: 8px 8px 0 rgba(0,0,0,1);
+    }
+
     .hero-heading { font-size: clamp(1.75rem, 3.4vw, 2.75rem); line-height: 1.05; margin: 0 0 0.6rem 0; }
     .hero-sub { max-width: 48rem; font-size: 1.05rem; color: #04111a; opacity: 0.95; margin-bottom: 1rem; }
     
+
     footer.site-footer {
       max-width: 1120px;
       margin: 0 auto 2rem;
@@ -139,8 +178,28 @@
       border-radius: 4px;
       text-align: center;
     }
+
+    body {
+  /*  keep all your existing body styles like that for animate*/
+  background-size: 300% 300%;
+  animation: animateGradient 15s ease-in-out infinite;
+}
+
+    @keyframes animateGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
   </style>
 </head>
+
+
 <body>
   <header class="max-w-[1120px] mx-auto px-4 py-3 flex items-center justify-between bg-white border-b-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-md static z-40">
     <h1 class="text-lg md:text-2xl font-bold">Gaurav Mahajan</h1>
@@ -166,16 +225,21 @@
 
   <main class="hero-grid" role="main">
     <div style="display:flex; justify-content:center; align-items:center;">
-      <div class="neobrutal-frame polaroid">
-        <img
-          src="gauravbhai.jpg"
-          alt="Gaurav Mahajan — portrait"
-          class="frame-img frame-img-clean"
-          loading="lazy"
-          decoding="async"
-          width="360"
-          height="450"
-        />
+      <div class="neobrutal-frame polaroid" aria-hidden="false">
+        <div class="photo-stack" id="photoStack" tabindex="0" role="button" aria-label="Profile photos. Click or press arrow keys to cycle.">
+  <img src="gauravbhai.jpg" alt="Gaurav — portrait 1" class="stack-img active" draggable="false" />
+  <img src="gaurav2.png" alt="Gaurav — portrait 2" class="stack-img behind" draggable="false" />
+  <img src="gaurav7.png" alt="Gaurav — portrait 7" class="stack-img behind" draggable="false" />
+  <img src="gaurav5.png" alt="Gaurav — portrait 5" class="stack-img behind" draggable="false" />
+  <img src="gaurav10.png" alt="Gaurav — portrait 10" class="stack-img behind" draggable="false" />
+  <img src="gaurav4.png" alt="Gaurav — portrait 4" class="stack-img behind" draggable="false" />
+  <img src="gaurav6.png" alt="Gaurav — portrait 6" class="stack-img behind" draggable="false" />
+  <img src="gaurav8.png" alt="Gaurav — portrait 8" class="stack-img behind" draggable="false" />
+  <img src="gaurav9.png" alt="Gaurav — portrait 9" class="stack-img behind" draggable="false" />
+  <img src="gaurav3.png" alt="Gaurav — portrait 3" class="stack-img behind" draggable="false" />
+  <img src="gaurav11.png" alt="Gaurav — portrait 11" class="stack-img behind" draggable="false" />
+  <img src="gaurav12.png" alt="Gaurav — portrait 12" class="stack-img behind" draggable="false" />
+</div>
       </div>
     </div>
     <div class="hero-text">
@@ -261,6 +325,7 @@
   </footer>
 
   <script>
+    // Mobile menu toggling
     const menuBtn = document.getElementById('menuBtn');
     const mobileNav = document.getElementById('mobileNav');
     menuBtn.addEventListener('click', () => {
@@ -275,6 +340,118 @@
         menuBtn.setAttribute('aria-expanded', 'false');
       })
     );
+
+    // Photo stack logic
+    (function () {
+      const stackEl = document.getElementById('photoStack');
+      if (!stackEl) return;
+
+      const imgs = Array.from(stackEl.querySelectorAll('.stack-img'));
+      let current = 0;
+
+      //  COLOR PALETTES 
+      // Defined a color palette for each image. The order must match the image order in the html
+  const imageColorPalettes = [
+  // Palette for gauravbhai.jpg (Black & Gold)
+  ['#1a1100', '#4d3300', '#996500', '#ffaa00', '#ffc34d', '#ffdb99'],
+  // Palette for gaurav2.png (Monochromatic Green)
+  ['#011a0e', '#03351d', '#05502c', '#066b3b', '#08864a', '#0a9c55'],
+  // Palette for gaurav7.png (Indigo & Teal)
+  ['#100033', '#25007a', '#3c00c7', '#255e6e', '#3c97b0', '#65c9e3'],
+  // Palette for gaurav5.png (Purple & Cyan)
+  ['#1e0033', '#310054', '#5e00a3', '#0d6f8a', '#17a9d1', '#59d2f0'],
+  // Palette for gaurav10.png (Pink & Teal)
+  ['#001a18', '#004d47', '#008076', '#b31956', '#d64d82', '#e680a9'],
+  // Palette for gaurav4.png (Cool Grayscale)
+  ['#0f0f12', '#212126', '#3b3b42', '#5a5a63', '#8c8c96', '#c2c2cc'],
+  // Palette for gaurav6.png (Fiery Orange & Red)
+  ['#1a0700', '#661b00', '#b33000', '#ff4500', '#ff6a33', '#ff9c7a'],
+  // Palette for gaurav8.png (Monochromatic Blue)
+  ['#000f1a', '#00254d', '#004185', '#005cb3', '#3385d6', '#66a3e0'],
+  // Palette for gaurav9.png (Muted Purple & Teal)
+  ['#1e1c24', '#3c3847', '#575269', '#4d757d', '#6daeb8', '#98d2dc'],
+  // Palette for gaurav3.png (Deep Magenta)
+  ['#1a001a', '#330033', '#660066', '#b300b3', '#cc33cc', '#e680e6'],
+  // Palette for gaurav11.png (Vibrant Orange)
+  ['#000000', '#331100', '#802b00', '#e64d00', '#ff661a', '#ff8c57'],
+  // Palette for gaurav12.png (Violet & Cream)
+  ['#110033', '#250075', '#3900b3', '#7e6a9e', '#b5a7c9', '#ede6f5']
+];//END OF COLOR PALETTES
+
+      // Initialize stack positions and background
+      function layout() {
+        // UPDATE BACKGROUND 
+        const palette = imageColorPalettes[current];
+        const root = document.documentElement;
+        root.style.setProperty('--s1', palette[0]);
+        root.style.setProperty('--s2', palette[1]);
+        root.style.setProperty('--s3', palette[2]);
+        root.style.setProperty('--s4', palette[3]);
+        root.style.setProperty('--s5', palette[4]);
+        root.style.setProperty('--s6', palette[5]);
+        // END OF UPDATE BACKGROUND
+        
+        // Arrange images in stack
+        for (let i = 0; i < imgs.length; i++) {
+          const idx = (current + i) % imgs.length;
+          const img = imgs[idx];
+          img.classList.remove('active', 'behind');
+          // Top image
+          if (i === 0) {
+            img.classList.add('active');
+            img.style.zIndex = String(100 - i);
+            img.style.transform = `translate3d(0,0,0) scale(1) rotate(0deg)`;
+            img.style.opacity = '1';
+          } else {
+            // Stacked behind images with subtle offsets
+            const offsetY = 8 + i * 6; // vertical offset per layer
+            const scale = 1 - (i * 0.03);
+            const rotate = (i % 2 === 0) ? -4 + i*0.5 : 4 - i*0.5;
+            img.classList.add('behind');
+            img.style.zIndex = String(100 - i - 10);
+            img.style.transform = `translate3d(${i * 8}px, ${offsetY}px, -${i * 20}px) scale(${scale}) rotate(${rotate}deg)`;
+            img.style.opacity = String(Math.max(0.7, 1 - i * 0.06));
+          }
+        }
+      }
+
+      // Cycle to next photo
+      function next() {
+        current = (current + 1) % imgs.length;
+        layout();
+      }
+
+      // Cycle to previous photo
+      function prev() {
+        current = (current - 1 + imgs.length) % imgs.length;
+        layout();
+      }
+
+      // Click or keyboard handlers
+      stackEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        next();
+      });
+
+      // Keyboard accessibility: left/right arrows, enter/space
+      stackEl.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          next();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prev();
+        }
+      });
+
+      // Preventionn image dragging on desktop which breaks the interaction
+      imgs.forEach(img => {
+        img.addEventListener('dragstart', (e) => e.preventDefault());
+      });
+
+      // Initial layout calling
+      layout();
+    })();
   </script>
 </body>
 </html>
