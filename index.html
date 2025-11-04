@@ -10,7 +10,7 @@
       --neo-accent: #783ffe;
       --neo-shadow: rgba(0,0,0,1);
       --bg-paper: #fffdf7;
-      
+     
       /* default starting colors*/
       --s1: #7fe8a8;
       --s2: #9ff2c6;
@@ -19,7 +19,7 @@
       --s5: #dfffe8;
       --s6: #86ffc1;
     }
-    
+   
     html, body { height: 100%; }
     body {
       /* The background will transition smoothy when CSS variables change */
@@ -32,13 +32,115 @@
         var(--s5) 66.66% 83.33%,
         var(--s6) 83.33% 100%
       );
-      transition: background 650ms ease-out;
+      background-size: 300% 300%;
+      animation: animateGradient 15s ease-in-out infinite;
+      transition: filter 350ms ease;
       min-height: 100vh;
       margin: 0;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
       color: #0b1220;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+    }
+
+    @keyframes animateGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* blur/disable main while animation runs */
+    body.animation-playing .main-content {
+      filter: blur(2px) saturate(.9);
+      pointer-events: none;
+      user-select: none;
+      transition: filter 300ms ease;
+      opacity: 0.98;
+    }
+
+    .main-content { max-width:900px; margin: 40px auto; }
+
+    /* ---------- overlay / premiere style ---------- */
+    #animation-overlay {
+      position: fixed;
+      inset: 0; /* top:0;right:0;bottom:0;left:0; */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.92);
+      z-index:9999;
+      pointer-events: auto; /* block interactions while showing */
+      opacity: 0;
+      transform: translateZ(0);
+      animation: overlayFadeIn 300ms cubic-bezier(.22,.9,.35,1) forwards;
+    }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* SVG container scaling in */
+    #animation-overlay svg {
+      max-width: 90vw;
+      max-height: 75vh;
+      opacity: 0;
+      transform: scale(.82);
+      animation: svgPop 420ms cubic-bezier(.2,.9,.32,1) 200ms forwards;
+    }
+
+    @keyframes svgPop {
+      to { opacity:1; transform: scale(1); }
+    }
+
+    /* path base styles */
+    .animated-path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke: white;
+      stroke-width: 2.6;
+      vector-effect: non-scaling-stroke;
+    }
+
+    /* draw keyframes (we apply durations and delays inline via JS) */
+    @keyframes draw {
+      from { stroke-dashoffset: 1; }
+      to   { stroke-dashoffset: 0; }
+    }
+
+    /* quick fadeout - used when finishing overlay */
+    @keyframes overlayFadeOut {
+      to { opacity: 0; transform: translateY(-6px) scale(.995); }
+    }
+
+    /* overlay controls styling */
+    .overlay-controls {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .overlay-controls button {
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      backdrop-filter: blur(4px);
+    }
+    .overlay-controls button:active { transform: translateY(1px); }
+
+    /* small responsive tweak */
+    @media (max-width:600px){
+      #animation-overlay svg { max-height:60vh; }
     }
 
     /* Header container */
@@ -54,10 +156,9 @@
       box-shadow: 6px 6px 0 0 rgba(0,0,0,1);
       border-radius:4px;
     }
-
     header.site-header a { color: #0b1220; text-decoration:none; margin-left:0.75rem; }
     header.site-header a:hover { text-decoration:underline; }
-    
+   
     .hero-grid {
       display: grid;
       grid-template-columns: 360px 1fr;
@@ -67,13 +168,12 @@
       margin: 2.25rem auto;
       padding: 1.5rem;
     }
-
     @media (max-width: 860px) {
       .hero-grid { grid-template-columns: 1fr; gap: 1.5rem; padding: 1rem; }
       .polaroid { transform: none !important; margin: 0 auto; }
       .hero-text { text-align: center; }
     }
-    
+   
     .neobrutal-frame {
       position: relative;
       background: var(--bg-paper);
@@ -87,7 +187,7 @@
       backface-visibility: hidden;
       box-sizing: border-box;
     }
-    
+   
     .neobrutal-frame::after {
       content: "";
       position: absolute;
@@ -98,7 +198,7 @@
       pointer-events: none;
       box-sizing: border-box;
     }
-    
+   
     .polaroid {
       transform: rotate(-2deg);
       transition: transform 180ms ease, box-shadow 120ms ease;
@@ -110,27 +210,21 @@
       position: relative;
       background: transparent;
     }
-
     .neobrutal-frame:hover {
       transform: translate(-6px, -6px) rotate(-1deg);
       box-shadow: 14px 14px 0 0 var(--neo-shadow);
     }
-
     /* Photo stack container */
     .photo-stack {
       position: relative;
       width: 100%;
       height: 0;
-
       /* Maintain aspect ratio 4:5 (360x450) */
       padding-bottom: 125%; /* 5/4 = 125% */
       perspective: 1400px;
       cursor: pointer;
       outline: none;
     }
-
-
-
     .stack-img {
       position: absolute;
       top: 12px; left: 12px; right: 12px; bottom: 12px;
@@ -148,7 +242,6 @@
       user-select: none;
       -webkit-user-drag: none;
     }
-
     /* The active (top) image */
     .stack-img.active {
       opacity: 1;
@@ -156,18 +249,15 @@
       box-shadow: 18px 18px 0 rgba(0,0,0,1);
       z-index: 50;
     }
-
     /* Slightly less prominent images behind */
     .stack-img.behind {
       opacity: 0.95;
       z-index: 10;
       box-shadow: 8px 8px 0 rgba(0,0,0,1);
     }
-
     .hero-heading { font-size: clamp(1.75rem, 3.4vw, 2.75rem); line-height: 1.05; margin: 0 0 0.6rem 0; }
     .hero-sub { max-width: 48rem; font-size: 1.05rem; color: #04111a; opacity: 0.95; margin-bottom: 1rem; }
-    
-
+   
     footer.site-footer {
       max-width: 1120px;
       margin: 0 auto 2rem;
@@ -178,153 +268,347 @@
       border-radius: 4px;
       text-align: center;
     }
-
-    body {
-  /*  keep all your existing body styles like that for animate*/
-  background-size: 300% 300%;
-  animation: animateGradient 15s ease-in-out infinite;
-}
-
-    @keyframes animateGradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
   </style>
 </head>
-
-
-<body>
-  <header class="max-w-[1120px] mx-auto px-4 py-3 flex items-center justify-between bg-white border-b-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-md static z-40">
-    <h1 class="text-lg md:text-2xl font-bold">Gaurav Mahajan</h1>
-    <nav class="hidden md:flex gap-6 items-center text-base" aria-label="Main navigation">
-      <a href="#about" class="hover:underline">About</a>
-      <a href="#projects" class="hover:underline">Projects</a>
-      <a href="#contact" class="hover:underline">Contact</a>
-    </nav>
-    <button id="menuBtn" class="md:hidden menu-btn p-2 rounded bg-white border-2 border-black" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
-      <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="22" height="2" y="0" rx="1" fill="#000"/>
-        <rect width="22" height="2" y="6" rx="1" fill="#000"/>
-        <rect width="22" height="2" y="12" rx="1" fill="#000"/>
-      </svg>
-    </button>
-  </header>
-
-  <div id="mobileNav" class="fixed inset-x-4 top-20 bg-white border-4 border-black rounded-xl shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-4 z-30 hidden" role="menu" aria-label="Mobile navigation">
-    <a href="#about" class="block py-2 text-lg">About</a>
-    <a href="#projects" class="block py-2 text-lg">Projects</a>
-    <a href="#contact" class="block py-2 text-lg">Contact</a>
+<body class="animation-playing">
+  <!-- Wrap all main content in .main-content for blur effect during animation -->
+  <div class="main-content">
+    <header class="max-w-[1120px] mx-auto px-4 py-3 flex items-center justify-between bg-white border-b-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-md static z-40">
+      <h1 class="text-lg md:text-2xl font-bold">Gaurav Mahajan</h1>
+      <nav class="hidden md:flex gap-6 items-center text-base" aria-label="Main navigation">
+        <a href="#about" class="hover:underline">About</a>
+        <a href="#projects" class="hover:underline">Projects</a>
+        <a href="#contact" class="hover:underline">Contact</a>
+      </nav>
+      <button id="menuBtn" class="md:hidden menu-btn p-2 rounded bg-white border-2 border-black" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+        <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="22" height="2" y="0" rx="1" fill="#000"/>
+          <rect width="22" height="2" y="6" rx="1" fill="#000"/>
+          <rect width="22" height="2" y="12" rx="1" fill="#000"/>
+        </svg>
+      </button>
+    </header>
+    <div id="mobileNav" class="fixed inset-x-4 top-20 bg-white border-4 border-black rounded-xl shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-4 z-30 hidden" role="menu" aria-label="Mobile navigation">
+      <a href="#about" class="block py-2 text-lg">About</a>
+      <a href="#projects" class="block py-2 text-lg">Projects</a>
+      <a href="#contact" class="block py-2 text-lg">Contact</a>
+    </div>
+    <main class="hero-grid" role="main">
+      <div style="display:flex; justify-content:center; align-items:center;">
+        <div class="neobrutal-frame polaroid" aria-hidden="false">
+          <div class="photo-stack" id="photoStack" tabindex="0" role="button" aria-label="Profile photos. Click or press arrow keys to cycle.">
+    <img src="gauravbhai.jpg" alt="Gaurav — portrait 1" class="stack-img active" draggable="false" />
+    <img src="gaurav2.png" alt="Gaurav — portrait 2" class="stack-img behind" draggable="false" />
+    <img src="gaurav7.png" alt="Gaurav — portrait 7" class="stack-img behind" draggable="false" />
+    <img src="gaurav5.png" alt="Gaurav — portrait 5" class="stack-img behind" draggable="false" />
+    <img src="gaurav10.png" alt="Gaurav — portrait 10" class="stack-img behind" draggable="false" />
+    <img src="gaurav4.png" alt="Gaurav — portrait 4" class="stack-img behind" draggable="false" />
+    <img src="gaurav6.png" alt="Gaurav — portrait 6" class="stack-img behind" draggable="false" />
+    <img src="gaurav8.png" alt="Gaurav — portrait 8" class="stack-img behind" draggable="false" />
+    <img src="gaurav9.png" alt="Gaurav — portrait 9" class="stack-img behind" draggable="false" />
+    <img src="gaurav3.png" alt="Gaurav — portrait 3" class="stack-img behind" draggable="false" />
+    <img src="gaurav11.png" alt="Gaurav — portrait 11" class="stack-img behind" draggable="false" />
+    <img src="gaurav12.png" alt="Gaurav — portrait 12" class="stack-img behind" draggable="false" />
+  </div>
+        </div>
+      </div>
+      <div class="hero-text">
+        <h2 class="hero-heading"><strong>Hello, I'm</strong> <span style="color:var(--neo-accent)">Gaurav</span></h2>
+        <p class="hero-sub">
+          A passionate Software Engineering student who loves building unique projects that blend technology, AI, and creativity.
+          I focus on clean, strong design and practical code — especially projects that solve real problems in Fintech, Biotech,
+          Education, and Research.
+          I'm deeply interested in Art, Psychology, Artificial Intelligence and Machine Learning, Quantum Computing, BioTech, Geopolitics, and Foreign Affairs.
+          Leonardo da Mahajan — that's me!
+        </p>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <a href="#projects" class="inline-block bg-yellow-300 border-4 border-black rounded-xl px-6 py-3 font-bold shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+            View My Work
+          </a>
+          <a href="#contact" class="inline-flex items-center justify-center px-5 py-3 border-4 border-black rounded-xl font-bold">
+            Contact
+          </a>
+        </div>
+      </div>
+    </main>
+    <section id="about" class="max-w-4xl mx-auto p-8 mb-16 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)]">
+      <h3 class="text-2xl font-bold mb-4">About Me</h3>
+      <p>
+        Hey geeks! I'm an IT Engineering student who's absolutely obsessed with AI/ML, web development, and IoT magic.
+        I live for crafting bold, experimental UIs and shipping tools that make a real difference to users. When I'm not coding,
+        you'll find me rapidly prototyping the next big thing or tinkering with bleeding-edge tech.
+        I'm all about building disruptive projects that blend cutting-edge AI with creative problem-solving.
+        My stack: clean, performant code with rock-solid architecture.
+        I'm particularly drawn to tackling complex problems in fintech, biotech, edtech, and scientific research —
+        basically anywhere technology can make a real dent in the universe.
+        I'm a full-stack engineer with ML expertise and IoT skills. My sweet spot: taking complex algorithmic wizardry and wrapping it in buttery-smooth UX.
+        Whether I'm spinning up microservices, training neural networks, or orchestrating edge computing solutions, I focus on scalable products users love.
+        I geek out over art, psychology, quantum computing, biotech breakthroughs, and geopolitical chess moves (yes, I love chess).
+        This eclectic mix fuels my ability to connect dots others miss and create genuinely innovative solutions.
+        I bring analytical firepower, creative problem-solving, and a "I'm a fool, let's learn!" mindset to everything I touch.
+        My mission: craft technology that not only works but makes the world just a little bit better.
+        Most of my projects are still under development, so stay tuned!
+      </p>
+    </section>
+    <section id="projects" class="max-w-5xl mx-auto px-6 mb-16">
+      <h3 class="text-2xl font-bold mb-6 text-center">Projects</h3>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6">
+          <h4 class="text-xl font-bold mb-2">Learning Management System</h4>
+          <p class="mb-4">
+            A Python-based desktop application to manage and automate study and tasks.
+            Built with PyQt6 and SQLite — includes role-based access (Student/Admin), course CRUD, PDF/video management, a
+            custom PDF reader that remembers last-read page, task reminders, admin announcements with approval workflow,
+            rich-text notes with inline images, and a color-coded calendar.
+            Includes analytics with matplotlib and auto-generated PDF reports via reportlab.
+          </p>
+          <a href="https://github.com/GauravMahajan077/LMS.git" class="text-blue-500 underline">View Project</a>
+        </div>
+        <div class="bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6">
+          <h4 class="text-xl font-bold mb-2">Hospital Management System</h4>
+          <p class="mb-4">
+            Java-based desktop application using MySQL and Swing for full-scale hospital management.
+            Modules include patient, doctor, and staff administration, advanced room allocation, and ambulance tracking.
+            An appointment scheduler avoids conflicts, and real-time data ensures optimized workflows with accurate records.
+          </p>
+          <a href="https://github.com/GauravMahajan077/Hospital.management.system-.git" class="text-blue-500 underline">View Project</a>
+        </div>
+      </div>
+    </section>
+    <section id="contact" class="max-w-4xl mx-auto p-8 mb-16 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] text-center">
+      <h3 class="text-2xl font-bold mb-4">Contact Me</h3>
+      <p class="mb-4">Let's collaborate! Reach out via email or social media.</p>
+      <div class="space-x-4">
+        <a href="mailto:your-gau.mah077@gmail.com" class="underline text-purple-500">Email</a>
+        <a href="https://www.linkedin.com/in/gaurav-mahajan-b80492284" class="underline text-blue-500">LinkedIn</a>
+        <a href="https://github.com/GauravMahajan077" class="underline text-green-500">GitHub</a>
+        <a href="https://www.instagram.com/mrgoram077" class="underline text-pink-500">Instagram</a>
+      </div>
+    </section>
+    <footer class="site-footer" role="contentinfo">
+      <small>&copy; 2025 Gaurav Mahajan</small>
+    </footer>
   </div>
 
-  <main class="hero-grid" role="main">
-    <div style="display:flex; justify-content:center; align-items:center;">
-      <div class="neobrutal-frame polaroid" aria-hidden="false">
-        <div class="photo-stack" id="photoStack" tabindex="0" role="button" aria-label="Profile photos. Click or press arrow keys to cycle.">
-  <img src="gauravbhai.jpg" alt="Gaurav — portrait 1" class="stack-img active" draggable="false" />
-  <img src="gaurav2.png" alt="Gaurav — portrait 2" class="stack-img behind" draggable="false" />
-  <img src="gaurav7.png" alt="Gaurav — portrait 7" class="stack-img behind" draggable="false" />
-  <img src="gaurav5.png" alt="Gaurav — portrait 5" class="stack-img behind" draggable="false" />
-  <img src="gaurav10.png" alt="Gaurav — portrait 10" class="stack-img behind" draggable="false" />
-  <img src="gaurav4.png" alt="Gaurav — portrait 4" class="stack-img behind" draggable="false" />
-  <img src="gaurav6.png" alt="Gaurav — portrait 6" class="stack-img behind" draggable="false" />
-  <img src="gaurav8.png" alt="Gaurav — portrait 8" class="stack-img behind" draggable="false" />
-  <img src="gaurav9.png" alt="Gaurav — portrait 9" class="stack-img behind" draggable="false" />
-  <img src="gaurav3.png" alt="Gaurav — portrait 3" class="stack-img behind" draggable="false" />
-  <img src="gaurav11.png" alt="Gaurav — portrait 11" class="stack-img behind" draggable="false" />
-  <img src="gaurav12.png" alt="Gaurav — portrait 12" class="stack-img behind" draggable="false" />
-</div>
-      </div>
+  <!-- Overlay (plays first on load, then auto-hides to reveal main content) -->
+  <div id="animation-overlay" aria-hidden="false">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 589.6 200" width="589.6" height="200">
+            <path class="animated-path" d="M 233.800,87.400 C 227.800,75.400 227.911,75.343 221.800,63.400" stroke-width="3.041"/>
+            <path class="animated-path" d="M 221.800,63.400 C 216.911,53.843 217.192,53.643 211.800,44.400" stroke-width="1.761"/>
+            <path class="animated-path" d="M 211.800,44.400 C 210.192,41.643 210.303,41.277 207.800,39.400" stroke-width="2.214"/>
+            <path class="animated-path" d="M 207.800,39.400 C 204.303,36.777 203.647,34.947 199.800,35.400" stroke-width="2.506"/>
+            <path class="animated-path" d="M 199.800,35.400 C 195.147,35.947 193.979,37.313 190.800,41.400" stroke-width="2.531"/>
+            <path class="animated-path" d="M 190.800,41.400 C 186.979,46.313 186.599,47.008 185.800,53.400" stroke-width="2.102"/>
+            <path class="animated-path" d="M 185.800,53.400 C 182.599,79.008 182.472,79.482 182.800,105.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 182.800,105.400 C 182.972,118.982 183.967,119.086 186.800,132.400" stroke-width="1.151"/>
+            <path class="animated-path" d="M 186.800,132.400 C 188.967,142.586 188.719,142.878 192.800,152.400" stroke-width="1.383"/>
+            <path class="animated-path" d="M 192.800,152.400 C 196.219,160.378 196.893,160.183 201.800,167.400" stroke-width="1.568"/>
+            <path class="animated-path" d="M 201.800,167.400 C 205.393,172.683 205.429,172.755 209.800,177.400" stroke-width="1.771"/>
+            <path class="animated-path" d="M 209.800,177.400 C 213.429,181.255 213.486,181.413 217.800,184.400" stroke-width="1.974"/>
+            <path class="animated-path" d="M 217.800,184.400 C 219.986,185.913 220.198,185.927 222.800,186.400" stroke-width="2.353"/>
+            <path class="animated-path" d="M 222.800,186.400 C 225.698,186.927 226.879,188.146 228.800,186.400" stroke-width="2.675"/>
+            <path class="animated-path" d="M 228.800,186.400 C 232.379,183.146 231.732,181.571 233.800,176.400" stroke-width="2.551"/>
+            <path class="animated-path" d="M 233.800,176.400 C 235.732,171.571 235.886,171.519 236.800,166.400" stroke-width="2.560"/>
+            <path class="animated-path" d="M 236.800,166.400 C 238.386,157.519 238.132,157.418 238.800,148.400" stroke-width="1.833"/>
+            <path class="animated-path" d="M 238.800,148.400 C 239.132,143.918 239.195,143.876 238.800,139.400" stroke-width="2.080"/>
+            <path class="animated-path" d="M 238.800,139.400 C 237.695,126.876 238.408,126.659 235.800,114.400" stroke-width="1.518"/>
+            <path class="animated-path" d="M 235.800,114.400 C 233.408,103.159 232.560,103.303 228.800,92.400" stroke-width="1.420"/>
+            <path class="animated-path" d="M 228.800,92.400 C 227.560,88.803 227.973,88.388 225.800,85.400" stroke-width="1.974"/>
+            <path class="animated-path" d="M 225.800,85.400 C 223.973,82.888 223.666,82.355 220.800,81.400" stroke-width="2.495"/>
+            <path class="animated-path" d="M 220.800,81.400 C 217.666,80.355 215.874,78.998 213.800,81.400" stroke-width="2.857"/>
+            <path class="animated-path" d="M 213.800,81.400 C 206.374,89.998 206.575,92.014 201.800,103.400" stroke-width="2.170"/>
+            <path class="animated-path" d="M 201.800,103.400 C 200.075,107.514 201.038,107.885 200.800,112.400" stroke-width="2.160"/>
+            <path class="animated-path" d="M 200.800,112.400 C 200.538,117.385 200.030,117.525 200.800,122.400" stroke-width="2.135"/>
+            <path class="animated-path" d="M 200.800,122.400 C 201.530,127.025 201.942,127.065 203.800,131.400" stroke-width="2.187"/>
+            <path class="animated-path" d="M 203.800,131.400 C 204.942,134.065 205.405,133.842 206.800,136.400" stroke-width="2.380"/>
+            <path class="animated-path" d="M 206.800,136.400 C 208.405,139.342 208.081,139.535 209.800,142.400" stroke-width="2.379"/>
+            <path class="animated-path" d="M 209.800,142.400 C 211.081,144.535 210.820,145.657 212.800,146.400" stroke-width="2.740"/>
+            <path class="animated-path" d="M 212.800,146.400 C 214.820,147.157 216.220,147.206 217.800,145.400" stroke-width="2.958"/>
+            <path class="animated-path" d="M 217.800,145.400 C 223.220,139.206 223.445,138.331 226.800,130.400" stroke-width="2.388"/>
+            <path class="animated-path" d="M 226.800,130.400 C 228.945,125.331 229.112,124.712 228.800,119.400" stroke-width="2.492"/>
+            <path class="animated-path" d="M 228.800,119.400 C 228.612,116.212 228.160,115.236 225.800,113.400" stroke-width="2.808"/>
+            <path class="animated-path" d="M 225.800,113.400 C 223.660,111.736 222.819,112.674 219.800,112.400" stroke-width="2.846"/>
+            <path class="animated-path" d="M 219.800,112.400 C 217.319,112.174 215.005,113.628 214.800,112.400" stroke-width="2.905"/>
+            <path class="animated-path" d="M 214.800,112.400 C 214.505,110.628 216.482,109.139 218.800,106.400" stroke-width="3.089"/>
+            <path class="animated-path" d="M 218.800,106.400 C 221.982,102.639 222.300,102.900 225.800,99.400" stroke-width="2.389"/>
+            <path class="animated-path" d="M 225.800,99.400 C 229.300,95.900 231.845,93.355 232.800,92.400" stroke-width="2.204"/>
+            <path class="animated-path" d="M 232.800,92.400 C 233.345,91.855 229.862,94.011 228.800,96.400" stroke-width="2.867"/>
+            <path class="animated-path" d="M 228.800,96.400 C 227.862,98.511 228.552,98.925 228.800,101.400" stroke-width="2.654"/>
+            <path class="animated-path" d="M 228.800,101.400 C 229.052,103.925 228.538,105.895 229.800,106.400" stroke-width="3.000"/>
+            <path class="animated-path" d="M 229.800,106.400 C 231.038,106.895 232.562,105.380 233.800,103.400" stroke-width="3.148"/>
+            <path class="animated-path" d="M 233.800,103.400 C 235.062,101.380 234.570,100.927 234.800,98.400" stroke-width="2.987"/>
+            <path class="animated-path" d="M 234.800,98.400 C 235.070,95.427 234.800,95.400 234.800,92.400" stroke-width="2.903"/>
+            <path class="animated-path" d="M 234.800,92.400 C 234.800,89.900 234.800,87.400 234.800,87.400" stroke-width="3.063"/>
+            <path class="animated-path" d="M 234.800,87.400 C 234.800,87.400 233.550,91.150 234.800,92.400" stroke-width="3.227"/>
+            <path class="animated-path" d="M 234.800,92.400 C 236.050,93.650 238.255,93.725 239.800,92.400" stroke-width="3.262"/>
+            <path class="animated-path" d="M 239.800,92.400 C 241.755,90.725 240.970,86.677 241.800,86.400" stroke-width="3.138"/>
+            <path class="animated-path" d="M 241.800,86.400 C 242.470,86.177 241.538,90.895 242.800,91.400" stroke-width="3.264"/>
+            <path class="animated-path" d="M 242.800,91.400 C 244.038,91.895 245.800,90.400 246.800,88.400" stroke-width="3.288"/>
+            <path class="animated-path" d="M 246.800,88.400 C 247.800,86.400 246.552,85.875 246.800,83.400" stroke-width="3.213"/>
+            <path class="animated-path" d="M 246.800,83.400 C 247.052,80.875 246.341,79.130 247.800,78.400" stroke-width="3.191"/>
+            <path class="animated-path" d="M 247.800,78.400 C 249.341,77.630 251.259,78.602 252.800,80.400" stroke-width="3.235"/>
+            <path class="animated-path" d="M 252.800,80.400 C 254.259,82.102 253.130,85.623 253.800,85.400" stroke-width="3.104"/>
+            <path class="animated-path" d="M 253.800,85.400 C 254.630,85.123 254.720,82.371 255.800,79.400" stroke-width="3.219"/>
+            <path class="animated-path" d="M 255.800,79.400 C 256.720,76.871 256.800,76.900 257.800,74.400" stroke-width="3.092"/>
+            <path class="animated-path" d="M 257.800,74.400 C 258.800,71.900 259.565,69.165 259.800,69.400" stroke-width="3.173"/>
+            <path class="animated-path" d="M 259.800,69.400 C 260.065,69.665 258.800,72.408 258.800,75.400" stroke-width="3.186"/>
+            <path class="animated-path" d="M 258.800,75.400 C 258.800,77.908 258.341,79.670 259.800,80.400" stroke-width="3.099"/>
+            <path class="animated-path" d="M 259.800,80.400 C 261.341,81.170 263.050,80.150 264.800,78.400" stroke-width="3.173"/>
+            <path class="animated-path" d="M 264.800,78.400 C 266.550,76.650 266.565,75.983 266.800,73.400" stroke-width="2.987"/>
+            <path class="animated-path" d="M 266.800,73.400 C 267.065,70.483 266.596,70.317 265.800,67.400" stroke-width="2.899"/>
+            <path class="animated-path" d="M 265.800,67.400 C 265.096,64.817 264.504,62.165 263.800,62.400" stroke-width="2.997"/>
+            <path class="animated-path" d="M 263.800,62.400 C 263.004,62.665 261.779,66.102 262.800,68.400" stroke-width="3.155"/>
+            <path class="animated-path" d="M 262.800,68.400 C 263.779,70.602 265.201,71.140 267.800,71.400" stroke-width="3.122"/>
+            <path class="animated-path" d="M 267.800,71.400 C 270.201,71.640 270.351,70.513 272.800,69.400" stroke-width="2.679"/>
+            <path class="animated-path" d="M 272.800,69.400 C 275.851,68.013 275.963,68.173 278.800,66.400" stroke-width="2.492"/>
+            <path class="animated-path" d="M 278.800,66.400 C 283.963,63.173 283.921,63.059 288.800,59.400" stroke-width="2.058"/>
+            <path class="animated-path" d="M 288.800,59.400 C 291.921,57.059 294.250,54.400 294.800,54.400" stroke-width="2.495"/>
+            <path class="animated-path" d="M 294.800,54.400 C 295.250,54.400 293.060,57.140 290.800,59.400" stroke-width="2.839"/>
+            <path class="animated-path" d="M 290.800,59.400 C 282.560,67.640 282.052,67.148 273.800,75.400" stroke-width="1.718"/>
+            <path class="animated-path" d="M 273.800,75.400 C 252.052,97.148 251.627,96.788 230.800,119.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 230.800,119.400 C 216.627,134.788 217.265,135.370 203.800,151.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 203.800,151.400 C 185.765,172.870 177.591,178.489 167.800,194.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 167.800,194.400 C 165.591,197.989 174.550,193.832 179.800,190.400" stroke-width="1.705"/>
+            <path class="animated-path" d="M 179.800,190.400 C 200.550,176.832 200.262,175.970 219.800,160.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 219.800,160.400 C 232.262,150.470 231.489,149.526 243.800,139.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 243.800,139.400 C 262.489,124.026 262.713,124.288 281.800,109.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 281.800,109.400 C 287.713,104.788 287.964,105.106 293.800,100.400" stroke-width="1.363"/>
+            <path class="animated-path" d="M 293.800,100.400 C 303.464,92.606 303.300,92.400 312.800,84.400" stroke-width="1.369"/>
+            <path class="animated-path" d="M 312.800,84.400 C 322.300,76.400 322.433,76.545 331.800,68.400" stroke-width="1.299"/>
+            <path class="animated-path" d="M 255.800,30.400 C 254.300,37.400 254.410,37.425 252.800,44.400" stroke-width="3.150"/>
+            <path class="animated-path" d="M 252.800,44.400 C 248.410,63.425 247.677,63.274 243.800,82.400" stroke-width="1.284"/>
+            <path class="animated-path" d="M 243.800,82.400 C 240.177,100.274 240.673,100.380 237.800,118.400" stroke-width="1.128"/>
+            <path class="animated-path" d="M 237.800,118.400 C 235.173,134.880 235.444,134.923 232.800,151.400" stroke-width="1.166"/>
+            <path class="animated-path" d="M 238.800,33.400 C 240.300,36.400 239.962,36.600 241.800,39.400" stroke-width="3.285"/>
+            <path class="animated-path" d="M 241.800,39.400 C 250.462,52.600 250.442,52.663 259.800,65.400" stroke-width="1.461"/>
+            <path class="animated-path" d="M 259.800,65.400 C 268.442,77.163 268.871,76.845 277.800,88.400" stroke-width="1.264"/>
+            <path class="animated-path" d="M 277.800,88.400 C 285.871,98.845 285.242,99.375 293.800,109.400" stroke-width="1.304"/>
+            <path class="animated-path" d="M 293.800,109.400 C 302.742,119.875 303.282,119.417 312.800,129.400" stroke-width="1.292"/>
+            <path class="animated-path" d="M 312.800,129.400 C 323.782,140.917 324.104,140.634 334.800,152.400" stroke-width="1.208"/>
+            <path class="animated-path" d="M 334.800,152.400 C 339.104,157.134 339.197,157.134 342.800,162.400" stroke-width="1.657"/>
+            <path class="animated-path" d="M 165.800,150.400 C 167.800,148.900 167.761,148.847 169.800,147.400" stroke-width="3.316"/>
+            <path class="animated-path" d="M 169.800,147.400 C 183.261,137.847 183.135,137.657 196.800,128.400" stroke-width="1.427"/>
+            <path class="animated-path" d="M 196.800,128.400 C 214.135,116.657 214.146,116.658 231.800,105.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 231.800,105.400 C 248.646,94.658 248.283,93.973 265.800,84.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 265.800,84.400 C 291.283,70.473 291.739,71.277 317.800,58.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 317.800,58.400 C 334.239,50.277 334.313,50.427 350.800,42.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 350.800,42.400 C 372.313,31.927 372.316,31.932 393.800,21.400" stroke-width="1.125"/>
+            <path class="animated-path" d="M 393.800,21.400 C 397.816,19.432 397.865,19.519 401.800,17.400" stroke-width="1.537"/>
+    </svg>
+
+    <div class="overlay-controls">
+      <button id="skip-btn" title="Skip animation">Skip</button>
     </div>
-    <div class="hero-text">
-      <h2 class="hero-heading"><strong>Hello, I'm</strong> <span style="color:var(--neo-accent)">Gaurav</span></h2>
-      <p class="hero-sub">
-        A passionate Software Engineering student who loves building unique projects that blend technology, AI, and creativity.
-        I focus on clean, strong design and practical code — especially projects that solve real problems in Fintech, Biotech,
-        Education, and Research.  
-        I'm deeply interested in Art, Psychology, Artificial Intelligence and Machine Learning, Quantum Computing, BioTech, Geopolitics, and Foreign Affairs.  
-        Leonardo da Mahajan — that's me!
-      </p>
-      <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="#projects" class="inline-block bg-yellow-300 border-4 border-black rounded-xl px-6 py-3 font-bold shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-          View My Work
-        </a>
-        <a href="#contact" class="inline-flex items-center justify-center px-5 py-3 border-4 border-black rounded-xl font-bold">
-          Contact
-        </a>
-      </div>
-    </div>
-  </main>
-
-  <section id="about" class="max-w-4xl mx-auto p-8 mb-16 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)]">
-    <h3 class="text-2xl font-bold mb-4">About Me</h3>
-    <p>
-      Hey geeks! I'm an IT Engineering student who's absolutely obsessed with AI/ML, web development, and IoT magic.
-      I live for crafting bold, experimental UIs and shipping tools that make a real difference to users. When I'm not coding, 
-      you'll find me rapidly prototyping the next big thing or tinkering with bleeding-edge tech.  
-      I'm all about building disruptive projects that blend cutting-edge AI with creative problem-solving.
-      My stack: clean, performant code with rock-solid architecture.  
-      I'm particularly drawn to tackling complex problems in fintech, biotech, edtech, and scientific research — 
-      basically anywhere technology can make a real dent in the universe.  
-      I'm a full-stack engineer with ML expertise and IoT skills. My sweet spot: taking complex algorithmic wizardry and wrapping it in buttery-smooth UX.
-      Whether I'm spinning up microservices, training neural networks, or orchestrating edge computing solutions, I focus on scalable products users love.  
-      I geek out over art, psychology, quantum computing, biotech breakthroughs, and geopolitical chess moves (yes, I love chess).  
-      This eclectic mix fuels my ability to connect dots others miss and create genuinely innovative solutions.  
-      I bring analytical firepower, creative problem-solving, and a "I'm a fool, let's learn!" mindset to everything I touch.
-      My mission: craft technology that not only works but makes the world just a little bit better.  
-      Most of my projects are still under development, so stay tuned!
-    </p>
-  </section>
-
-  <section id="projects" class="max-w-5xl mx-auto px-6 mb-16">
-    <h3 class="text-2xl font-bold mb-6 text-center">Projects</h3>
-    <div class="grid md:grid-cols-2 gap-8">
-      <div class="bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6">
-        <h4 class="text-xl font-bold mb-2">Learning Management System</h4>
-        <p class="mb-4">
-          A Python-based desktop application to manage and automate study and tasks.
-          Built with PyQt6 and SQLite — includes role-based access (Student/Admin), course CRUD, PDF/video management, a 
-          custom PDF reader that remembers last-read page, task reminders, admin announcements with approval workflow,
-          rich-text notes with inline images, and a color-coded calendar.  
-          Includes analytics with matplotlib and auto-generated PDF reports via reportlab.
-        </p>
-        <a href="https://github.com/GauravMahajan077/LMS.git" class="text-blue-500 underline">View Project</a>
-      </div>
-
-      <div class="bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6">
-        <h4 class="text-xl font-bold mb-2">Hospital Management System</h4>
-        <p class="mb-4">
-          Java-based desktop application using MySQL and Swing for full-scale hospital management.
-          Modules include patient, doctor, and staff administration, advanced room allocation, and ambulance tracking.
-          An appointment scheduler avoids conflicts, and real-time data ensures optimized workflows with accurate records.
-        </p>
-        <a href="https://github.com/GauravMahajan077/Hospital.management.system-.git" class="text-blue-500 underline">View Project</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="contact" class="max-w-4xl mx-auto p-8 mb-16 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] text-center">
-    <h3 class="text-2xl font-bold mb-4">Contact Me</h3>
-    <p class="mb-4">Let's collaborate! Reach out via email or social media.</p>
-    <div class="space-x-4">
-      <a href="mailto:your-gau.mah077@gmail.com" class="underline text-purple-500">Email</a>
-      <a href="https://www.linkedin.com/in/gaurav-mahajan-b80492284" class="underline text-blue-500">LinkedIn</a>
-      <a href="https://github.com/GauravMahajan077" class="underline text-green-500">GitHub</a>
-      <a href="https://www.instagram.com/mrgoram077" class="underline text-pink-500">Instagram</a>
-    </div>
-  </section>
-
-  <footer class="site-footer" role="contentinfo">
-    <small>&copy; 2025 Gaurav Mahajan</small>
-  </footer>
+  </div>
 
   <script>
+    // Overlay Animation Script (IIFE - runs first on load)
+    (function(){
+      const overlay = document.getElementById('animation-overlay');
+      const paths = Array.from(overlay.querySelectorAll('.animated-path'));
+      const skipBtn = document.getElementById('skip-btn');
+
+      // Speeds -> larger means faster (duration = length / speed)
+      const BASE_SPEED = 700;   // for short deliberate strokes
+      const FAST_SPEED = 1600;  // for long strokes
+      const LENGTH_THRESHOLD = 48; // pixels to decide long vs short
+
+      // easing pool for a more organic hand feel
+      const bezierPool = [
+        'cubic-bezier(.22,.9,.35,1)',
+        'cubic-bezier(.18,.84,.44,1)',
+        'cubic-bezier(.25,.7,.35,1)',
+        'cubic-bezier(.3,.65,.5,1)'
+      ];
+
+      const randBetween = (a,b) => a + Math.random()*(b-a);
+      const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+      function initAnimation() {
+        let cursor = 0; // seconds
+        const globalRandomFactor = randBetween(0.92,1.08);
+
+        paths.forEach((p) => {
+          // ensure shape's length is known
+          const len = Math.ceil(p.getTotalLength() || 60);
+          const speed = len > LENGTH_THRESHOLD ? FAST_SPEED : BASE_SPEED;
+          const localJitter = randBetween(0.78, 1.18);
+          const liftChance = 0.11;
+          const liftPause = (Math.random() < liftChance) ? randBetween(0.04, 0.12) : 0;
+
+          const baseStroke = (parseFloat(p.getAttribute('stroke-width')) || 2.6);
+          const strokeJitter = randBetween(-0.9, 0.9);
+          p.style.strokeWidth = Math.max(0.9, baseStroke + strokeJitter) + 'px';
+
+          let duration = (len / speed) * globalRandomFactor * localJitter;
+          duration = Math.min(Math.max(duration, 0.03), 0.85);
+
+          cursor += randBetween(0.01, 0.06);
+          if (liftPause) cursor += liftPause;
+
+          const easing = pick(bezierPool);
+
+          p.style.strokeDasharray = len;
+          p.style.strokeDashoffset = len;
+
+          p.style.animation = `draw ${duration}s ${easing} ${cursor}s forwards`;
+          p.style['animationFillMode'] = 'forwards';
+
+          cursor += duration;
+        });
+
+        const totalTime = cursor + 0.18;
+        overlay._autoHideTimeout = setTimeout(() => finishOverlay(), totalTime * 1000);
+      }
+
+      function finishOverlay() {
+        overlay.style.animation = 'overlayFadeOut 320ms ease forwards';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          document.body.classList.remove('animation-playing');
+          overlay.setAttribute('aria-hidden','true');
+        }, 360);
+      }
+
+      function restartAnimation() {
+        if (overlay._autoHideTimeout) clearTimeout(overlay._autoHideTimeout);
+
+        overlay.style.display = 'flex';
+        overlay.style.animation = 'overlayFadeIn 300ms cubic-bezier(.22,.9,.35,1) forwards';
+        overlay.setAttribute('aria-hidden','false');
+        document.body.classList.add('animation-playing');
+
+        paths.forEach(p => {
+          const len = Math.ceil(p.getTotalLength() || 60);
+          p.style.animation = 'none';
+          p.style.strokeDasharray = len;
+          p.style.strokeDashoffset = len;
+          void p.offsetWidth;
+        });
+
+        setTimeout(initAnimation, 40);
+      }
+
+      skipBtn.addEventListener('click', () => {
+        if (overlay._autoHideTimeout) clearTimeout(overlay._autoHideTimeout);
+        paths.forEach(p => {
+          p.style.animation = 'none';
+          p.style.strokeDashoffset = 0;
+        });
+        finishOverlay();
+      });
+
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          restartAnimation();
+        }, 30);
+      });
+
+      // Expose restart for dev convenience
+      window.restartOverlayAnimation = restartAnimation;
+
+    })();
+
     // Mobile menu toggling
     const menuBtn = document.getElementById('menuBtn');
     const mobileNav = document.getElementById('mobileNav');
@@ -333,23 +617,19 @@
       const isOpen = !mobileNav.classList.contains('hidden');
       menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
-
     mobileNav.querySelectorAll('a').forEach(a =>
       a.addEventListener('click', () => {
         mobileNav.classList.add('hidden');
         menuBtn.setAttribute('aria-expanded', 'false');
       })
     );
-
     // Photo stack logic
     (function () {
       const stackEl = document.getElementById('photoStack');
       if (!stackEl) return;
-
       const imgs = Array.from(stackEl.querySelectorAll('.stack-img'));
       let current = 0;
-
-      //  COLOR PALETTES 
+      // COLOR PALETTES
       // Defined a color palette for each image. The order must match the image order in the html
   const imageColorPalettes = [
   // Palette for gauravbhai.jpg (Black & Gold)
@@ -377,10 +657,9 @@
   // Palette for gaurav12.png (Violet & Cream)
   ['#110033', '#250075', '#3900b3', '#7e6a9e', '#b5a7c9', '#ede6f5']
 ];//END OF COLOR PALETTES
-
       // Initialize stack positions and background
       function layout() {
-        // UPDATE BACKGROUND 
+        // UPDATE BACKGROUND
         const palette = imageColorPalettes[current];
         const root = document.documentElement;
         root.style.setProperty('--s1', palette[0]);
@@ -390,7 +669,7 @@
         root.style.setProperty('--s5', palette[4]);
         root.style.setProperty('--s6', palette[5]);
         // END OF UPDATE BACKGROUND
-        
+       
         // Arrange images in stack
         for (let i = 0; i < imgs.length; i++) {
           const idx = (current + i) % imgs.length;
@@ -414,25 +693,21 @@
           }
         }
       }
-
       // Cycle to next photo
       function next() {
         current = (current + 1) % imgs.length;
         layout();
       }
-
       // Cycle to previous photo
       function prev() {
         current = (current - 1 + imgs.length) % imgs.length;
         layout();
       }
-
       // Click or keyboard handlers
       stackEl.addEventListener('click', (e) => {
         e.preventDefault();
         next();
       });
-
       // Keyboard accessibility: left/right arrows, enter/space
       stackEl.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
@@ -443,12 +718,10 @@
           prev();
         }
       });
-
       // Preventionn image dragging on desktop which breaks the interaction
       imgs.forEach(img => {
         img.addEventListener('dragstart', (e) => e.preventDefault());
       });
-
       // Initial layout calling
       layout();
     })();
