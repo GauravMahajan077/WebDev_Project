@@ -11,7 +11,7 @@
       --neo-shadow: rgba(0,0,0,1);
       --bg-paper: #fffdf7;
      
-      /* default starting colors*/
+    
       --s1: #7fe8a8;
       --s2: #9ff2c6;
       --s3: #ccfeec;
@@ -22,7 +22,8 @@
    
     html, body { height: 100%; }
     body {
-      /* The background will transition smoothy when CSS variables change */
+
+      
       background: linear-gradient(
         90deg,
         var(--s1) 0% 16.66%,
@@ -55,27 +56,25 @@
       }
     }
 
-    /* blur/disable main while animation runs */
     body.animation-playing .main-content {
       filter: blur(2px) saturate(.9);
       pointer-events: none;
       user-select: none;
-      transition: filter 300ms ease;
+      transition: filter 290ms ease;
       opacity: 0.98;
     }
 
     .main-content { max-width:900px; margin: 40px auto; }
 
-    /* ---------- overlay / premiere style ---------- */
     #animation-overlay {
       position: fixed;
-      inset: 0; /* top:0;right:0;bottom:0;left:0; */
+      inset: 0; 
       display:flex;
       align-items:center;
       justify-content:center;
       background: rgba(0,0,0,0.92);
       z-index:9999;
-      pointer-events: auto; /* block interactions while showing */
+      pointer-events: auto;
       opacity: 0;
       transform: translateZ(0);
       animation: overlayFadeIn 300ms cubic-bezier(.22,.9,.35,1) forwards;
@@ -86,7 +85,6 @@
       to   { opacity: 1; }
     }
 
-    /* SVG container scaling in */
     #animation-overlay svg {
       max-width: 90vw;
       max-height: 75vh;
@@ -99,7 +97,7 @@
       to { opacity:1; transform: scale(1); }
     }
 
-    /* path base styles */
+  
     .animated-path {
       fill: none;
       stroke-linecap: round;
@@ -109,18 +107,16 @@
       vector-effect: non-scaling-stroke;
     }
 
-    /* draw keyframes (we apply durations and delays inline via JS) */
     @keyframes draw {
       from { stroke-dashoffset: 1; }
       to   { stroke-dashoffset: 0; }
     }
 
-    /* quick fadeout - used when finishing overlay */
     @keyframes overlayFadeOut {
       to { opacity: 0; transform: translateY(-6px) scale(.995); }
     }
 
-    /* overlay controls styling */
+   
     .overlay-controls {
       position: absolute;
       bottom: 18px;
@@ -138,12 +134,11 @@
     }
     .overlay-controls button:active { transform: translateY(1px); }
 
-    /* small responsive tweak */
+ 
     @media (max-width:600px){
       #animation-overlay svg { max-height:60vh; }
     }
 
-    /* Header container */
     header.site-header {
       max-width: 1120px;
       margin: 1.25rem auto 0;
@@ -214,13 +209,13 @@
       transform: translate(-6px, -6px) rotate(-1deg);
       box-shadow: 14px 14px 0 0 var(--neo-shadow);
     }
-    /* Photo stack container */
+   
     .photo-stack {
       position: relative;
       width: 100%;
       height: 0;
-      /* Maintain aspect ratio 4:5 (360x450) */
-      padding-bottom: 125%; /* 5/4 = 125% */
+    
+      padding-bottom: 125%; 
       perspective: 1400px;
       cursor: pointer;
       outline: none;
@@ -242,14 +237,14 @@
       user-select: none;
       -webkit-user-drag: none;
     }
-    /* The active (top) image */
+   
     .stack-img.active {
       opacity: 1;
       transform: translate3d(0,0,0) scale(1) rotate(0deg);
       box-shadow: 18px 18px 0 rgba(0,0,0,1);
       z-index: 50;
     }
-    /* Slightly less prominent images behind */
+    
     .stack-img.behind {
       opacity: 0.95;
       z-index: 10;
@@ -271,7 +266,7 @@
   </style>
 </head>
 <body class="animation-playing">
-  <!-- Wrap all main content in .main-content for blur effect during animation -->
+
   <div class="main-content">
     <header class="max-w-[1120px] mx-auto px-4 py-3 flex items-center justify-between bg-white border-b-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-md static z-40">
       <h1 class="text-lg md:text-2xl font-bold">Gaurav Mahajan</h1>
@@ -390,7 +385,6 @@
     </footer>
   </div>
 
-  <!-- Overlay (plays first on load, then auto-hides to reveal main content) -->
   <div id="animation-overlay" aria-hidden="false">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 589.6 200" width="589.6" height="200">
             <path class="animated-path" d="M 233.800,87.400 C 227.800,75.400 227.911,75.343 221.800,63.400" stroke-width="3.041"/>
@@ -502,18 +496,17 @@
   </div>
 
   <script>
-    // Overlay Animation Script (IIFE - runs first on load)
+ 
     (function(){
       const overlay = document.getElementById('animation-overlay');
       const paths = Array.from(overlay.querySelectorAll('.animated-path'));
       const skipBtn = document.getElementById('skip-btn');
 
-      // Speeds -> larger means faster (duration = length / speed)
-      const BASE_SPEED = 700;   // for short deliberate strokes
-      const FAST_SPEED = 1600;  // for long strokes
+      const BASE_SPEED = 800;   // for short deliberate strokes
+      const FAST_SPEED = 1700;  // for long strokes
       const LENGTH_THRESHOLD = 48; // pixels to decide long vs short
 
-      // easing pool for a more organic hand feel
+     
       const bezierPool = [
         'cubic-bezier(.22,.9,.35,1)',
         'cubic-bezier(.18,.84,.44,1)',
@@ -525,11 +518,11 @@
       const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
       function initAnimation() {
-        let cursor = 0; // seconds
+        let cursor = 0; 
         const globalRandomFactor = randBetween(0.92,1.08);
 
         paths.forEach((p) => {
-          // ensure shape's length is known
+        
           const len = Math.ceil(p.getTotalLength() || 60);
           const speed = len > LENGTH_THRESHOLD ? FAST_SPEED : BASE_SPEED;
           const localJitter = randBetween(0.78, 1.18);
@@ -604,7 +597,6 @@
         }, 30);
       });
 
-      // Expose restart for dev convenience
       window.restartOverlayAnimation = restartAnimation;
 
     })();
@@ -623,14 +615,14 @@
         menuBtn.setAttribute('aria-expanded', 'false');
       })
     );
-    // Photo stack logic
+  
     (function () {
       const stackEl = document.getElementById('photoStack');
       if (!stackEl) return;
       const imgs = Array.from(stackEl.querySelectorAll('.stack-img'));
       let current = 0;
       // COLOR PALETTES
-      // Defined a color palette for each image. The order must match the image order in the html
+      
   const imageColorPalettes = [
   // Palette for gauravbhai.jpg (Black & Gold)
   ['#1a1100', '#4d3300', '#996500', '#ffaa00', '#ffc34d', '#ffdb99'],
@@ -657,9 +649,9 @@
   // Palette for gaurav12.png (Violet & Cream)
   ['#110033', '#250075', '#3900b3', '#7e6a9e', '#b5a7c9', '#ede6f5']
 ];//END OF COLOR PALETTES
-      // Initialize stack positions and background
+   
       function layout() {
-        // UPDATE BACKGROUND
+       
         const palette = imageColorPalettes[current];
         const root = document.documentElement;
         root.style.setProperty('--s1', palette[0]);
@@ -668,9 +660,8 @@
         root.style.setProperty('--s4', palette[3]);
         root.style.setProperty('--s5', palette[4]);
         root.style.setProperty('--s6', palette[5]);
-        // END OF UPDATE BACKGROUND
-       
-        // Arrange images in stack
+        // END 
+      
         for (let i = 0; i < imgs.length; i++) {
           const idx = (current + i) % imgs.length;
           const img = imgs[idx];
@@ -683,7 +674,7 @@
             img.style.opacity = '1';
           } else {
             // Stacked behind images with subtle offsets
-            const offsetY = 8 + i * 6; // vertical offset per layer
+            const offsetY = 8 + i * 6; 
             const scale = 1 - (i * 0.03);
             const rotate = (i % 2 === 0) ? -4 + i*0.5 : 4 - i*0.5;
             img.classList.add('behind');
@@ -703,12 +694,12 @@
         current = (current - 1 + imgs.length) % imgs.length;
         layout();
       }
-      // Click or keyboard handlers
+    
       stackEl.addEventListener('click', (e) => {
         e.preventDefault();
         next();
       });
-      // Keyboard accessibility: left/right arrows, enter/space
+    
       stackEl.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -718,11 +709,13 @@
           prev();
         }
       });
-      // Preventionn image dragging on desktop which breaks the interaction
+     
       imgs.forEach(img => {
         img.addEventListener('dragstart', (e) => e.preventDefault());
       });
-      // Initial layout calling
+
+
+      
       layout();
     })();
   </script>
